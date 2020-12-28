@@ -1,0 +1,8 @@
+
+updatebars atualiza todas as barras , 
+todas as barras tem que tem 100% e % per frame
+current width e 
+
+alowheal tem que ser global tambem
+manter nomes mais consistentes
+gerar todo o data usando JS em outro arquivo.
