@@ -9,18 +9,12 @@ function createPartyHealth() {
       healing: {
         totalHeal: 0,
         directHeal: 0,
-        aoeHeal: {
-          active: false,
-          currentWidth: 100,
-        },
+        aoeHeal: false,
       },
       damage: {
         totalDmg: 0,
         directDmg: 0,
-        aoeDmg: {
-          active: false,
-          currentWidth: 100,
-        },
+        aoeDmg: false,
       },
     };
     party.push(health);

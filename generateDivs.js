@@ -1,26 +1,19 @@
 const tankContainer = document.querySelector('.tankContainer');
-const healthContainer = document.querySelector('.healthContainer');
+const partyContainer = document.querySelector('.partyContainer');
 const buttonsContainer = document.querySelector('.buttonsContainer');
 const manaContainer = document.querySelector('.manaContainer');
 
 function createhealthDivs() {
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 11; i++) {
     const healthDiv = document.createElement('div');
     const health = document.createElement('div');
     health.classList.add('healthBar');
     healthDiv.classList.add('healthBarDiv');
     healthDiv.appendChild(health);
-    healthContainer.appendChild(healthDiv);
+    partyContainer.appendChild(healthDiv);
   }
 }
 createhealthDivs();
-
-function createTankDiv() {
-  const tank = document.createElement('div');
-  tank.classList.add('tankBar');
-  tankContainer.appendChild(tank);
-}
-createTankDiv();
 
 function createButtons() {
   for (let i = 0; i < 4; i++) {
