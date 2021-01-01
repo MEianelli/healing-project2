@@ -121,7 +121,7 @@ function stoptMouseTimer() {
   handleHeal(mouseTimer);
   mouseTimer = 0;
 }
-
+aaaaaaaaaaaaaaaaaaaaaa;
 function castSpell(index) {
   animation = false;
 }
