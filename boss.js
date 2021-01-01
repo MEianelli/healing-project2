@@ -5,7 +5,7 @@ export const boss = {
       type: 'tankDmg',
       cooldown: 1.5,
       targets: 1,
-      dmg: 3.5,
+      dmg: 4,
       timer: 0,
     },
     {
