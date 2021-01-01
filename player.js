@@ -12,6 +12,18 @@ export const player = {
       manaCost: 5,
       timer: 0,
     },
+    hold: {
+      name: 'holy',
+      type: 'heal',
+      targets: 1,
+      hotsFreq: 0,
+      hotsRep: 1,
+      healAmount: 0,
+      cooldown: 0,
+      currentWidth: 100,
+      manaCost: 3,
+      timer: 0,
+    },
     holy: {
       name: 'holy',
       type: 'heal',

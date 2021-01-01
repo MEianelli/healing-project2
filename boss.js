@@ -11,7 +11,7 @@ export const boss = {
     {
       name: 'cleave',
       type: 'aoe',
-      cooldown: 2,
+      cooldown: 1,
       targets: 3,
       aoeFreq: 0.5,
       aoeRep: 4,
@@ -21,7 +21,7 @@ export const boss = {
     {
       name: 'firestorm',
       type: 'aoe',
-      cooldown: 30,
+      cooldown: 600,
       targets: 11,
       aoeFreq: 0,
       aoeRep: 1,

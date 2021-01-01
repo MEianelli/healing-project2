@@ -5,17 +5,22 @@ import { player } from './player.js';
 const framesPerSecond = 1000 / 10;
 const activeTimers = [...boss.spellList];
 const activeHots = [];
+const availableTargets = new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 const healthBars = document.querySelectorAll('.healthBar');
 const healthDivs = document.querySelectorAll('.healthBarDiv');
 const castingDiv = document.querySelector('.castingDiv');
+const manaBar = document.querySelector('.manaBar');
+const spellButton = document.querySelectorAll('.spellButton');
+const clickDelay = 0.3;
 let animation = true;
 let mouseTimer = 0;
 let mousePressed = false;
+let healTargetIndex = -1;
+let isCasting = false;
+let mouseX;
+let mouseY;
 
 window.onload = function () {
-  window.addEventListener('mousemove', e => {
-    updateCastingDiv(e);
-  });
   addClickEvents();
   startAnimation();
 };
@@ -25,13 +30,27 @@ function startAnimation() {
   updateHealthBars();
   updateHots(activeHots);
   updateMouseTimer();
-  updateCastingDiv();
 
   if (animation) {
     setTimeout(() => {
       startAnimation();
     }, framesPerSecond);
   }
+}
+
+function updateMana(spellName) {
+  const manaCost = player.spellsList[spellName].manaCost;
+  player.mana['currentWidth'] -= manaCost;
+  manaBar.style.width = `${player.mana['currentWidth']}%`;
+}
+
+function allowCasting(spellName, index) {
+  const {
+    mana: { currentWidth },
+  } = player;
+  if (player.spellsList[spellName].manaCost > currentWidth) return false;
+  if (party[index].currentWidth <= 0) return false;
+  return true;
 }
 
 function updateHots(array) {
@@ -50,12 +69,11 @@ function updateHots(array) {
   });
 }
 
-function updateCastingDiv(event = null) {
-  if (mousePressed) castingDiv.style.display = 'block';
-  else castingDiv.style.display = 'none';
-  if (event) {
-    castingDiv.style.top = `${event.clientY + 20}px`;
-    castingDiv.style.left = `${event.clientX + 20}px`;
+function updateCastingDiv() {
+  if (allowCasting('hold', healTargetIndex)) {
+    castingDiv.style.top = `${mouseY - 20}px`;
+    castingDiv.style.left = `${mouseX + 40}px`;
+    castingDiv.style.display = 'block';
   }
 }
 
@@ -63,24 +81,34 @@ function castRenew(index) {
   if (!party[index].healing.aoeHeal) {
     activeHots.push([index, 0, 0]);
     party[index].healing.aoeHeal = true;
+    updateMana('renew');
   }
 }
 
 function castHold(timer, index) {
   party[index]['currentWidth'] += timer * 4;
+  player.spellsList.hold['manaCost'] = timer;
+  updateMana('hold');
 }
 
-function handleHeal(hold, index) {
-  if (hold < 0.3) {
-    castRenew(index);
-  } else {
-    castHold(hold, index);
+function handleHeal(hold) {
+  if (hold < clickDelay && allowCasting('renew', healTargetIndex)) {
+    castRenew(healTargetIndex);
+  } else if (allowCasting('hold', healTargetIndex)) {
+    castHold(hold, healTargetIndex);
   }
 }
 
 function updateMouseTimer() {
   if (mousePressed) {
     mouseTimer += 0.1;
+    if (mouseTimer > clickDelay && mouseTimer < clickDelay * 1.1) isCasting = true;
+    if (isCasting) {
+      isCasting = false;
+      updateCastingDiv();
+    }
+  } else {
+    castingDiv.style.display = 'none';
   }
 }
 
@@ -88,30 +116,49 @@ function startMouseTimer() {
   mousePressed = true;
 }
 
-function stoptMouseTimer(index) {
+function stoptMouseTimer() {
   mousePressed = false;
-  handleHeal(mouseTimer, index);
+  handleHeal(mouseTimer);
   mouseTimer = 0;
+}
+
+function castSpell(index) {
+  animation = false;
 }
 
 function addClickEvents() {
   healthDivs.forEach((bar, index) => {
-    bar.addEventListener('mousedown', () => {
+    bar.addEventListener('mousedown', event => {
+      /*       console.log(event.target.style.width);
+      console.log(party[index].currentWidth); */
+
+      mouseX = event.x;
+      mouseY = event.y;
+      healTargetIndex = index;
       startMouseTimer();
     });
     bar.addEventListener('mouseup', () => {
-      stoptMouseTimer(index);
+      stoptMouseTimer();
+    });
+  });
+  spellButton.forEach((btn, index) => {
+    btn.addEventListener('click', () => {
+      castSpell(index);
     });
   });
 }
 
 function updateHealthBars() {
-  healthBars.forEach((bar, index) => {
+  availableTargets.forEach(index => {
     let tempObj = party[index];
-    if (tempObj.healing.aoeHeal) bar.style.backgroundColor = 'lightsalmon';
-    if (tempObj.currentWidth < 0) party[index]['currentWidth'] = 0;
+    if (tempObj.healing.aoeHeal) healthBars[index].style.backgroundColor = 'lightsalmon';
+    if (tempObj.currentWidth <= 0) {
+      party[index]['currentWidth'] = 0;
+      healthBars[index].style.border = '0px';
+      availableTargets.delete(index);
+    }
     if (tempObj.currentWidth > 100) party[index]['currentWidth'] = 100;
-    bar.style.width = `${party[index].currentWidth}%`;
+    healthBars[index].style.width = `${party[index].currentWidth}%`;
   });
 }
 
@@ -126,10 +173,11 @@ function updateTimers(array) {
 }
 
 function arrayOfTargetsIndexes(number) {
-  if (number === 11) return Array.from(Array(number), (_, i) => i);
+  const size = availableTargets.size;
+  if (number === 11 || number >= size) return [...availableTargets];
   const targets = [];
   while (targets.length < number) {
-    const randomIndex = Math.floor(Math.random() * 11);
+    const randomIndex = [...availableTargets][Math.floor(Math.random() * size)];
     if (!targets.includes(randomIndex)) targets.push(randomIndex);
   }
   return targets;
